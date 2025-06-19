@@ -32,38 +32,38 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useForm } from "@inertiajs/react"
+import { router } from "@inertiajs/react"
 
 const data = {
   user: {
     name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    email: "m@example.com"
   },
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
+      title: "Book Appointment",
+      url: "/booking",
       icon: IconListDetails,
     },
     {
-      title: "Analytics",
+      title: "Queue Status",
       url: "#",
       icon: IconChartBar,
     },
     {
-      title: "Projects",
+      title: "Branch Locations",
       url: "#",
       icon: IconFolder,
     },
     {
-      title: "Team",
+      title: "Settings",
       url: "#",
-      icon: IconUsers,
+      icon: IconSettings,
     },
   ],
   navClouds: [
@@ -116,12 +116,7 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
+      title: "Help Center",
       url: "#",
       icon: IconHelp,
     },
@@ -133,7 +128,7 @@ const data = {
   ],
   documents: [
     {
-      name: "Data Library",
+      name: "Queue History",
       url: "#",
       icon: IconDatabase,
     },
@@ -167,9 +162,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <a href="/">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">QSmart</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

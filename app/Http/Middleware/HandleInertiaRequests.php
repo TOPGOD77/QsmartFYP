@@ -39,6 +39,15 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        // Pages that don't need sidebar state
+        $noSidebarPages = [
+            'booking/bookingpage',
+            'welcome',
+            'queue/show',
+        ];
+
+        $currentPage = $request->route()->getName() ?? '';
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -50,7 +59,8 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => !in_array($currentPage, $noSidebarPages) && 
+                            (!$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true'),
         ];
     }
 }
