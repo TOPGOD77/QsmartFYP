@@ -4,14 +4,38 @@ import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
+// export default defineConfig({
+//     plugins: [
+//         laravel({
+//             input: [
+//                 'resources/css/app.css',
+//                 'resources/js/app.tsx',
+//                 'resources/js/pages/booking/bookingpage.tsx',
+//                 'resources/js/pages/queue/QueuePage.tsx'
+//             ],
+//             ssr: 'resources/js/ssr.tsx',
+//             refresh: true,
+//         }),
+//         react(),
+//         tailwindcss(),
+//     ],
+//     esbuild: {
+//         jsx: 'automatic',
+//     },
+//     resolve: {
+//         alias: {
+//             '@': resolve(__dirname, 'resources/js'),
+//             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+//         },
+//     },
+// });
+
 export default defineConfig({
     plugins: [
         laravel({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.tsx',
-                'resources/js/Pages/booking/bookingpage.tsx',
-                'resources/js/Pages/queue/QueuePage.tsx'
             ],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
