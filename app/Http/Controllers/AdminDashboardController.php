@@ -23,7 +23,7 @@ class AdminDashboardController extends Controller
                 $query->whereDate('booking_date', '<', $now->format('Y-m-d'))
                     ->orWhere(function($q) use ($now) {
                         $q->whereDate('booking_date', $now->format('Y-m-d'))
-                            ->whereTime('booking_time', '<', $now->format('H:i:s'));
+                            ->whereRaw('TIMESTAMP(booking_date, booking_time) < ?', [$now->copy()->subMinutes(10)->format('Y-m-d H:i:s')]);
                     });
             })
             ->update(['status' => 'missed']);
@@ -137,6 +137,23 @@ class AdminDashboardController extends Controller
             'statusBreakdown' => $statusBreakdown,
             'branchPerformance' => $branchPerformance,
         ]);
+    }
+
+    public function update(Request $request, Booking $booking)
+    {
+        $validated = $request->validate([
+            'service' => 'required|string',
+            'booking_date' => 'required|date|after_or_equal:today',
+            'booking_time' => 'required|date_format:H:i',
+        ]);
+
+        $booking->update([
+            'service' => $validated['service'],
+            'booking_date' => $validated['booking_date'],
+            'booking_time' => $validated['booking_time'],
+        ]);
+
+        return redirect()->back()->with('success', 'Booking updated successfully.');
     }
 
     public function destroy(Booking $booking)

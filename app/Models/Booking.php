@@ -75,15 +75,33 @@ class Booking extends Model
     protected static function booted()
     {
         static::creating(function ($booking) {
-            // Check for duplicate slots before saving
+            // Check for duplicate slots before saving (now includes service)
             $exists = static::where('branch', $booking->branch)
                 ->whereDate('booking_date', $booking->booking_date)
                 ->whereTime('booking_time', $booking->booking_time)
+                ->where('service', $booking->service)
                 ->exists();
 
             if ($exists) {
-                throw new \Exception('This time slot is already booked.');
+                throw new \Exception('This time slot is already booked for this service.');
             }
         });
+    }
+
+    public function getQueueNumberAttribute()
+    {
+        $serviceCodes = [
+            'Account Opening' => 'A',
+            'Loan Application' => 'B',
+            'Credit Card Services' => 'C',
+            'Customer Support & Inquiries' => 'D',
+            'Fixed Deposit Consultation' => 'E',
+        ];
+        $serviceCode = $serviceCodes[$this->service] ?? 'X';
+        $nextSequence = Booking::where('service', $this->service)
+            ->whereDate('booking_date', (string) $this->booking_date)
+            ->where('id', '<=', $this->id)
+            ->count();
+        return sprintf('%s%03d', $serviceCode, $nextSequence);
     }
 }

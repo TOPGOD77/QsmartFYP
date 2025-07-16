@@ -29,6 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', StaffMiddleware::class])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
     Route::post('/bookings/{booking}/status', [StaffDashboardController::class, 'updateStatus'])->name('bookings.update-status');
+    Route::post('/bookings/{booking}/notes', [StaffDashboardController::class, 'updateNotes'])->name('bookings.update-notes');
+    Route::get('/bookings/{booking}/manage', [StaffDashboardController::class, 'manage'])->name('booking.manage');
 });
 
 // Staff dashboard without prefix (rename route)
@@ -76,3 +78,5 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name
 Route::delete('/admin/bookings/{booking}', [AdminDashboardController::class, 'destroy'])->name('admin.bookings.destroy');
 
 Route::put('/admin/bookings/{booking}', [AdminDashboardController::class, 'update'])->name('admin.bookings.update');
+
+Route::post('/booking/request-edit', [App\Http\Controllers\BookingController::class, 'requestEdit'])->name('booking.requestEdit');

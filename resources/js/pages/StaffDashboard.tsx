@@ -83,7 +83,10 @@ export default function StaffDashboard() {
   const [showNotes, setShowNotes] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('date') || todayDate;
+  });
   const [bookings, setBookings] = useState(bookingsPaginator.data);
   const [notifications, setNotifications] = useState<Array<{
     id: number;
@@ -92,6 +95,8 @@ export default function StaffDashboard() {
     timestamp: Date;
   }>>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [noteEdit, setNoteEdit] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
 
   // Pagination variables
   const currentPage = bookingsPaginator.current_page;
@@ -145,8 +150,15 @@ export default function StaffDashboard() {
     const params = new URLSearchParams(window.location.search);
     setSearchTerm(params.get('search') || '');
     setStatusFilter(params.get('status') || null);
-    setSelectedDate(params.get('date') || '');
-  }, [window.location.search]);
+    const urlDate = params.get('date');
+    if (!urlDate) {
+      setSelectedDate(todayDate);
+      // Update the URL to include today's date
+      handleFilterChange({ date: todayDate });
+    } else {
+      setSelectedDate(urlDate);
+    }
+  }, [window.location.search, todayDate]);
 
   const updateStatus = (booking: Booking, newStatus: string) => {
     router.post(route('staff.bookings.update-status', { booking: booking.id }), {
@@ -188,6 +200,26 @@ export default function StaffDashboard() {
           );
         }, 5000);
       }
+    });
+  };
+
+  // Add this function to handle note save
+  const handleSaveNote = (booking: Booking) => {
+    setNoteSaving(true);
+    router.post(route('staff.bookings.update-notes', { booking: booking.id }), {
+      notes: noteEdit,
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setBookings(current =>
+          current.map(b =>
+            b.id === booking.id ? { ...b, notes: noteEdit } : b
+          )
+        );
+        setSelectedBooking({ ...booking, notes: noteEdit });
+        setNoteSaving(false);
+      },
+      onError: () => setNoteSaving(false),
     });
   };
 
@@ -501,31 +533,11 @@ export default function StaffDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setSelectedBooking(booking)}
+                          onClick={() => router.visit(route('staff.booking.manage', { booking: booking.id }))}
                           className="text-gray-600 hover:text-gray-900 rounded-full border border-gray-300"
                         >
                           View Details
                         </Button>
-                        {booking.status === 'pending' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStatus(booking, 'in_progress')}
-                            className="text-blue-600 hover:text-blue-800 rounded-full border border-blue-200"
-                          >
-                            Start Service
-                          </Button>
-                        )}
-                        {booking.status === 'in_progress' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStatus(booking, 'completed')}
-                            className="text-green-600 hover:text-green-800 rounded-full border border-green-200"
-                          >
-                            Complete
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </li>
@@ -570,35 +582,6 @@ export default function StaffDashboard() {
           </div>
         </div>
       </div>
-      {/* Booking Details Modal */}
-      {selectedBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-lg relative">
-            <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold"
-              onClick={() => setSelectedBooking(null)}
-              aria-label="Close"
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-bold mb-4 text-teal-700">Booking Details</h2>
-            <div className="space-y-2">
-              <div><span className="font-semibold">Customer:</span> {selectedBooking.customer.name} ({selectedBooking.customer.email})</div>
-              <div><span className="font-semibold">Service:</span> {selectedBooking.service}</div>
-              <div><span className="font-semibold">Branch:</span> {selectedBooking.branch}</div>
-              <div><span className="font-semibold">Date:</span> {formatDate(selectedBooking.date)}</div>
-              <div><span className="font-semibold">Time:</span> {selectedBooking.time}</div>
-              <div><span className="font-semibold">Status:</span> <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(selectedBooking.status)}`}>{selectedBooking.status.replace('_', ' ').toUpperCase()}</span></div>
-              <div><span className="font-semibold">Notes:</span> {selectedBooking.notes || <span className="italic text-gray-400">No notes</span>}</div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <Button variant="outline" onClick={() => setSelectedBooking(null)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 } 

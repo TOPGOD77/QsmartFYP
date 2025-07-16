@@ -36,6 +36,9 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = auth()->user();
+        // Save the current session ID to the user
+        $user->session_id = session()->getId();
+        $user->save();
         
         Log::info('User authenticated', [
             'user_id' => $user->id,

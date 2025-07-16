@@ -13,6 +13,7 @@ class DashboardController extends Controller
     {
         // Get current date and time
         $now = now();
+        $today = $now->format('Y-m-d');
         
         // Update any past pending appointments to missed
         Booking::where('user_id', auth()->id())
@@ -21,7 +22,7 @@ class DashboardController extends Controller
                 $query->where('booking_date', '<', $now->format('Y-m-d'))
                     ->orWhere(function ($q) use ($now) {
                         $q->where('booking_date', $now->format('Y-m-d'))
-                            ->where('booking_time', '<', $now->format('H:i:s'));
+                            ->whereRaw('TIMESTAMP(booking_date, booking_time) < ?', [$now->copy()->subMinutes(10)->format('Y-m-d H:i:s')]);
                     });
             })
             ->update(['status' => 'missed']);
@@ -45,7 +46,7 @@ class DashboardController extends Controller
                 return [
                     'id' => $booking->id,
                     'service' => $booking->service,
-                    'date' => Carbon::parse($booking->booking_date)->format('Y-m-d'),
+                    'date' => Carbon::parse((string) $booking->booking_date)->format('Y-m-d'),
                     'time' => Carbon::parse($booking->booking_time)->format('h:i A'),
                     'branch' => $booking->branch,
                     'status' => $status
@@ -59,9 +60,33 @@ class DashboardController extends Controller
             ->orderByDesc('booking_date')
             ->first()?->review;
 
+        // List of services and their codes
+        $serviceCodes = [
+            'Account Opening' => 'A',
+            'Loan Application' => 'B',
+            'Credit Card Services' => 'C',
+            'Customer Support & Inquiries' => 'D',
+            'Fixed Deposit Consultation' => 'E',
+        ];
+
+        // Get the current queue number for each service for today
+        $currentQueues = collect($serviceCodes)->mapWithKeys(function ($code, $service) use ($today) {
+            $latestBooking = Booking::where('service', $service)
+                ->whereDate('booking_date', $today)
+                ->orderByDesc('id')
+                ->first();
+            return [
+                $service => [
+                    'code' => $code,
+                    'queue_number' => $latestBooking ? $latestBooking->queue_number : null,
+                ]
+            ];
+        });
+
         return Inertia::render('dashboard', [
             'upcomingAppointments' => $upcomingAppointments,
             'recentReview' => $recentReview,
+            'currentQueues' => $currentQueues,
         ]);
     }
 } 

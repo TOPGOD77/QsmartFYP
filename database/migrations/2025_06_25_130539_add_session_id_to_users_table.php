@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('customer');
-            $table->string('department')->nullable();
-            $table->timestamp('email_verified_at')->nullable()->change();
+            $table->string('session_id')->nullable()->after('remember_token');
         });
     }
 
@@ -24,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role', 'department']);
-            $table->timestamp('email_verified_at')->nullable(false)->change();
+            $table->dropColumn('session_id');
         });
     }
 };

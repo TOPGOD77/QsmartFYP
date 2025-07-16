@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role', // 'customer' or 'staff'
         'department', // For staff: their service department
+        'session_id',
     ];
 
     /**

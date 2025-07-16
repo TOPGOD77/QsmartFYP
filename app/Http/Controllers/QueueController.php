@@ -47,8 +47,8 @@ class QueueController extends Controller
         // Get the slot number from the time slots array
         $slotNumber = $timeSlots[$formattedTime] ?? 1;
 
-        // Format turn number with branch code and slot number (e.g. "B001")
-        $turnNumber = sprintf('%s%03d', $branchCode, $slotNumber);
+        // Use the new queue_number accessor
+        $turnNumber = $booking->queue_number;
 
         \Log::info('Queue number calculation', [
             'booking_time' => $formattedTime,
@@ -59,7 +59,7 @@ class QueueController extends Controller
 
         // Get daily queue number (resets each day)
         $dailyQueueNumber = Booking::where('branch', $booking->branch)
-            ->whereDate('booking_date', $booking->booking_date)
+        ->whereDate('booking_date', (string) $booking->booking_date)
             ->where('id', '<=', $booking->id)
             ->count();
 
@@ -96,11 +96,11 @@ class QueueController extends Controller
 
         // Calculate people ahead in queue
         $peopleAhead = Booking::where('branch', $booking->branch)
-            ->whereDate('booking_date', $booking->booking_date)
-            ->where('status', 'pending')  // Only count pending bookings
+            ->whereDate('booking_date', (string) $booking->booking_date)
+            ->where('service', $booking->service) // Only count same service
+            ->where('status', 'pending')
             ->where(function($query) use ($booking, $now, $bookingTime) {
                 $query->where(function($q) use ($booking, $now, $bookingTime) {
-                    // Only count people with earlier time slots
                     $q->whereTime('booking_time', '<', $bookingTime->format('H:i:s'));
                 });
             })
@@ -171,7 +171,9 @@ class QueueController extends Controller
         \Log::info('Queue Calculation Details', [
             'current_time' => $now->format('Y-m-d H:i:s'),
             'current_time_kl' => $nowInKL->format('Y-m-d H:i:s'),
-            'booking_date' => $booking->booking_date->format('Y-m-d'),
+            'booking_date' => ($booking->booking_date instanceof Carbon)
+                ? $booking->booking_date->format('Y-m-d')
+                : Carbon::parse((string) $booking->booking_date)->format('Y-m-d'),
             'booking_time' => $bookingTime->format('h:i A'),
             'booking_datetime' => isset($bookingDateTime) ? $bookingDateTime->format('Y-m-d H:i:s') : null,
             'booking_datetime_kl' => isset($bookingInKL) ? $bookingInKL->format('Y-m-d H:i:s') : null,

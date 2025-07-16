@@ -34,7 +34,7 @@ class ProfileController extends Controller
 
         // Update password if provided
         if (isset($validated['current_password'])) {
-            if (!Hash::check($validated['current_password'], $user->password)) {
+            if (!Hash::check($validated['current_password'], $user->getAuthPassword())) {
                 return back()->withErrors([
                     'current_password' => 'The provided password does not match your current password.',
                 ]);

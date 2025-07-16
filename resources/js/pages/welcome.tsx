@@ -38,6 +38,12 @@ const Welcome = () => {
   });
 
   const handleSearch = () => {
+    const date = new Date(appointmentData.date);
+    const day = date.getDay();
+    if (day === 0 || day === 6) {
+      alert('Booking on Saturday and Sunday is not allowed.');
+      return;
+    }
     router.visit('/booking', {
       method: 'get',
       data: {
@@ -116,10 +122,7 @@ const Welcome = () => {
               Simplify your banking experience with Q-Smart. Manage your
               appointments and queues in real-time from anywhere!
             </p>
-            <Button className={buttonClass + " animate-bounce-subtle"}>
-              Learn More
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
+            {/* Removed Learn More button */}
           </div>
         </section>
 
@@ -127,7 +130,7 @@ const Welcome = () => {
         <section className="-mt-12 bg-white shadow-xl rounded-lg mx-auto p-8 w-full max-w-4xl relative z-10 transform hover:shadow-2xl transition-all duration-300">
           <div className="flex items-center gap-2 mb-6">
             <Search className="w-5 h-5 text-[#007E85]" />
-            <h3 className="text-xl font-semibold text-gray-800">Quick Appointment Search</h3>
+            <h3 className="text-xl font-semibold text-gray-800">Quick Booking Appointment Search</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
@@ -278,25 +281,7 @@ const Welcome = () => {
         </section>
 
         {/* Newsletter */}
-        <section className="bg-[#007E85] py-20 px-6">
-          <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-3xl font-semibold mb-4 text-white">
-              Stay Updated
-            </h2>
-            <p className="mb-8 text-teal-100">
-              Subscribe to our newsletter for the latest updates and features.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center items-stretch gap-4 max-w-md mx-auto">
-              <Input 
-                placeholder="Enter your email" 
-                className="flex-1 h-12 bg-white/10 text-white placeholder:text-white/60 border-white/20"
-              />
-              <Button className="bg-white text-[#007E85] hover:bg-white/90 h-12 px-8 font-semibold">
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </section>
+        {/* Removed Stay Updated newsletter section */}
 
         {/* Footer */}
         <footer className="bg-gray-900 text-white py-12 px-6">
@@ -309,28 +294,15 @@ const Welcome = () => {
                 Simplifying queue management for a better banking experience.
               </p>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Services</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Services</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Queue Management</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Appointment Booking</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Customer Support</a></li>
-              </ul>
-            </div>
+            {/* Removed Quick Links and Services columns */}
+            <div />
+            <div />
             <div>
               <h4 className="font-semibold mb-4">Contact Us</h4>
               <ul className="space-y-2 text-gray-400">
                 <li className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  <span>Klang, Selangor</span>
+                  <span>Bangi</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />

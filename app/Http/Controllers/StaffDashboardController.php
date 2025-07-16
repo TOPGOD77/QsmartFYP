@@ -19,8 +19,7 @@ class StaffDashboardController extends Controller
         Booking::where('status', 'pending')
             ->where(function($query) use ($now) {
                 $query->where(function($q) use ($now) {
-                    // Create a Carbon instance from booking_date and booking_time
-                    $q->whereRaw("CONCAT(booking_date, ' ', booking_time) < ?", [$now->format('Y-m-d H:i:s')]);
+                    $q->whereRaw("CONCAT(booking_date, ' ', booking_time) < ?", [$now->copy()->subMinutes(10)->format('Y-m-d H:i:s')]);
                 });
             })
             ->update(['status' => 'missed']);
@@ -150,7 +149,7 @@ class StaffDashboardController extends Controller
             if ($updated) {
                 // Calculate queue position for all pending bookings
                 $queuePosition = Booking::where('branch', $booking->branch)
-                    ->whereDate('booking_date', $booking->booking_date)
+                    ->whereDate('booking_date', (string) $booking->booking_date)
                     ->where('status', 'pending')
                     ->where(function($query) use ($booking) {
                         $query->whereTime('booking_time', '<', $booking->booking_time)
@@ -164,9 +163,7 @@ class StaffDashboardController extends Controller
                 // Broadcast the update
                 event(new \App\Events\BookingStatusUpdated($booking, $queuePosition));
 
-                return response()->json([
-                    'message' => 'Booking status updated successfully',
-                ]);
+                return redirect()->route('staff.booking.manage', ['booking' => $booking->id])->with('success', 'Booking status updated successfully');
             }
 
             return response()->json([
@@ -184,5 +181,44 @@ class StaffDashboardController extends Controller
                 'message' => 'An error occurred while updating the booking status'
             ], 500);
         }
+    }
+
+    public function updateNotes(Request $request, Booking $booking)
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+        ]);
+        $booking->notes = $validated['notes'];
+        $booking->staff_id = $request->user()->id;
+        $booking->save();
+        return redirect()->back()->with('success', 'Notes updated successfully.');
+    }
+
+    public function manage(Request $request, Booking $booking)
+    {
+        $booking->load('user');
+        return Inertia::render('StaffBookingManage', [
+            'booking' => [
+                'id' => $booking->id,
+                'customer' => [
+                    'name' => $booking->user->name,
+                    'email' => $booking->user->email,
+                ],
+                'service' => $booking->service,
+                'date' => $booking->booking_date->format('Y-m-d'),
+                'time' => $booking->booking_time,
+                'branch' => $booking->branch,
+                'status' => $booking->status,
+                'notes' => $booking->notes,
+            ],
+            'auth' => [
+                'user' => [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'department' => $request->user()->department,
+                ],
+            ],
+        ]);
     }
 } 

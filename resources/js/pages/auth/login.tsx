@@ -51,7 +51,7 @@ export default function Login() {
                                     required
                                 />
                             </div>
-                            {errors.email && (
+                            {errors.email && errors.email !== 'These credentials do not match our records.' && (
                                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                             )}
                         </div>
@@ -86,6 +86,9 @@ export default function Login() {
                                     )}
                                 </button>
                             </div>
+                            {errors.email === 'These credentials do not match our records.' && (
+                                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                            )}
                             {errors.password && (
                                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                             )}
