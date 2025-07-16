@@ -287,8 +287,8 @@ export default function StaffDashboard() {
       let start = 0;
       const end = value;
       if (start === end) return;
-      let increment = end > start ? 1 : -1;
-      let stepTime = Math.abs(Math.floor(1000 / (end - start)));
+      const increment = end > start ? 1 : -1;
+      const stepTime = Math.abs(Math.floor(1000 / (end - start)));
       const timer = setInterval(() => {
         start += increment;
         setDisplay(start);
